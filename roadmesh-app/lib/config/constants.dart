@@ -24,7 +24,7 @@ class AppConstants {
   static const int vehicleExpiryMs = 8000;
 
   // Map
-  static const double defaultZoom = 16.0;
+  static const double defaultZoom = 16.5;
   static const double defaultLat = 10.0261;
   static const double defaultLng = 76.3125;
 

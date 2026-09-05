@@ -196,11 +196,19 @@ class VehicleMarkerPainter {
     required RiskLevel riskLevel,
     required bool isEgo,
   }) async {
-    // Proportional, lane-accurate canvas size (88px for Ego 3D Car, 44px for nearby)
-    final double canvasSize = isEgo ? 88.0 : 44.0;
+    // Internal draw canvas stays the same (drawing coords unchanged).
+    // Scale factor shrinks the final bitmap so icons are lane-proportional:
+    //   Ego: 88px logical -> 48px bitmap  (scale 0.545)
+    //   Nearby: 44px logical -> 24px bitmap  (scale 0.545)
+    // This lets two side-by-side cars fit clearly in normal navigation view.
+    final double drawSize = isEgo ? 88.0 : 44.0;
+    const double kScale = 0.545; // ~half linear = quarter area footprint
+    final int outputPx = (drawSize * kScale).round();
+
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, canvasSize, canvasSize));
-    final center = Offset(canvasSize / 2, canvasSize / 2);
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, drawSize, drawSize));
+    canvas.scale(kScale, kScale);
+    final center = Offset(drawSize / 2, drawSize / 2);
 
     final themeColor = _getVehicleThemeColor(type);
     final alertColor = _getAlertColor(riskLevel, themeColor);
@@ -212,15 +220,15 @@ class VehicleMarkerPainter {
         _drawEgoCleanVehicle(canvas, center, type);
       }
     } else {
-      // Nearby mesh vehicles
       _drawNearbyVehicle(canvas, center, type, riskLevel, alertColor);
     }
 
     final picture = recorder.endRecording();
-    final img = await picture.toImage(canvasSize.toInt(), canvasSize.toInt());
+    final img = await picture.toImage(outputPx, outputPx);
     final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
     return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
   }
+
 
   // ─── Color Resolvers ────────────────────────────────────────────────────────
 

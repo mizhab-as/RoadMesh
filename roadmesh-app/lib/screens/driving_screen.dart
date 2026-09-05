@@ -636,11 +636,11 @@ class _DrivingScreenState extends State<DrivingScreen>
   /// Clean map view: zero hardcoded circles!
   Set<Circle> _buildCircles(DrivingProvider provider) => const <Circle>{};
 
-  /// Smoothly follows the driver in 2D/3D perspective (zoom 19.3 when navigating, 17.5 in free drive).
+  /// Smoothly follows the driver in 2D/3D perspective (zoom 18.0 when navigating, 16.5 in free drive).
   void _followDriver(DrivingProvider provider, LatLng carPos, double carHeading) {
     if (!_isCameraFollowLocked || _mapController == null) return;
 
-    final targetZoom = _activeRoute != null ? 19.3 : 17.5;
+    final targetZoom = _activeRoute != null ? 18.0 : 16.5;
 
     _animateCameraProgrammatically(
       CameraUpdate.newCameraPosition(
@@ -658,7 +658,7 @@ class _DrivingScreenState extends State<DrivingScreen>
   /// Re-centers the camera smoothly onto the driver and locks tracking.
   void _recenterOnDriver(DrivingProvider provider) {
     final (carPos, carHeading, _) = _resolveCarTelemetry(provider);
-    final targetZoom = _activeRoute != null ? 19.3 : 17.5;
+    final targetZoom = _activeRoute != null ? 18.0 : 16.5;
 
     _animateCameraProgrammatically(
       CameraUpdate.newCameraPosition(
@@ -1027,7 +1027,7 @@ class _DrivingScreenState extends State<DrivingScreen>
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target: origin,
-            zoom: 19.3,
+            zoom: 18.0,
             bearing: navBearing,
             tilt: _is3DMode ? 38.0 : 0.0,
           ),
@@ -1310,7 +1310,7 @@ class _DrivingScreenState extends State<DrivingScreen>
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: carPos,
-          zoom: 17.5,
+          zoom: 16.5,
           bearing: carHeading,
           tilt: _is3DMode ? 35.0 : 0.0,
         ),
@@ -1502,7 +1502,7 @@ class _DrivingScreenState extends State<DrivingScreen>
               GoogleMap(
                 initialCameraPosition: CameraPosition(
                   target: LatLng(centerLat, centerLng),
-                  zoom: 17.5,
+                  zoom: 16.5,
                   tilt: _is3DMode ? 35.0 : 0.0,
                 ),
                 mapType: _currentMapType,
