@@ -10,7 +10,7 @@
 #   • Cloud & Live: Render backend deploy + Vercel dashboard + Cloud URL mobile builder
 # ═══════════════════════════════════════════════════════════════════════════════
 
-set -e
+# Note: not using set -e so phone/ADB failures don't kill server launch
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER_DIR="$ROOT_DIR/roadmesh-server"
@@ -239,11 +239,35 @@ detect_and_configure_phone() {
         done
     fi
 
+    # Handle offline state — phone USB mode may have switched to charging-only
+    if echo "$DEVICE_LINE" | grep -q "offline"; then
+        echo -e "\n${YELLOW}${BOLD}⚠️  DEVICE IS OFFLINE — USB mode may have changed!${RESET}"
+        echo -e "${YELLOW}👉 On your phone:${RESET}"
+        echo -e "   1. Pull down the notification shade."
+        echo -e "   2. Tap ${BOLD}\"USB charging this device\"${RESET} or ${BOLD}\"Android System\"${RESET}."
+        echo -e "   3. Select ${BOLD}\"File Transfer\"${RESET} (MTP) mode."
+        echo -e "   4. Re-authorize USB debugging if prompted.\n"
+        echo -e "${CYAN}⏳ Waiting up to 30s for device to come back online...${RESET}"
+        adb kill-server > /dev/null 2>&1 || true
+        adb start-server > /dev/null 2>&1 || true
+
+        for i in {1..30}; do
+            DEVICE_LINE="$(get_device_line)"
+            if echo "$DEVICE_LINE" | grep -q "device$"; then
+                echo -e "   ${GREEN}✓ Device recovered and ready!${RESET}"
+                break
+            fi
+            sleep 1
+        done
+    fi
+
     DEVICE_ID=$(echo "$DEVICE_LINE" | awk '{print $1}')
     DEVICE_STATE=$(echo "$DEVICE_LINE" | awk '{print $2}')
 
     if [ "$DEVICE_STATE" != "device" ]; then
-        echo -e "${RED}❌ Phone is in state '$DEVICE_STATE'. Please authorize USB debugging on the phone.${RESET}\n"
+        echo -e "${RED}❌ Phone is still in state '${DEVICE_STATE}'.${RESET}"
+        echo -e "${YELLOW}   Switch USB mode to 'File Transfer' on your phone and run again.${RESET}\n"
+        DEVICE_ID=""   # Clear so deploy_mobile_app skips safely
         return 1
     fi
 
@@ -427,7 +451,7 @@ run_all() {
     start_server
     detect_and_configure_phone || true
     if [ -n "$DEVICE_ID" ]; then
-        deploy_mobile_app
+        deploy_mobile_app || echo -e "${YELLOW}⚠️  Phone deploy failed — server & dashboard still running.${RESET}"
     fi
     open_dashboard
 
