@@ -30,8 +30,8 @@ class AppConstants {
 
   // Safety
   static const double nearbyRadiusMeters = 500.0;
-  static const double redAlertDistanceMeters = 30.0;
-  static const double yellowAlertDistanceMeters = 80.0;
+  static const double redAlertDistanceMeters = 15.0;
+  static const double yellowAlertDistanceMeters = 20.0;
 
   // UI
   static const double mapPadding = 50.0;

@@ -67,8 +67,8 @@ class _DrivingScreenState extends State<DrivingScreen>
   bool _showGeopositionBanner = true;
   bool _isMapReady = false;
 
-  // V2X Radar Detection Range in Meters (0 = OFF, up to 300m)
-  int _radarRangeMeters = 300;
+  // V2X Radar Detection Range in Meters (0 = OFF, up to 500m matching server)
+  int _radarRangeMeters = 500;  // Default: full server range (matches NEARBY_RADIUS_METERS)
 
   // Active turn-by-turn navigation state
   ActiveNavigationRoute? _activeRoute;
@@ -1697,8 +1697,13 @@ class _DrivingScreenState extends State<DrivingScreen>
                   activeRoute: _activeRoute,
                   previewDestination: _droppedPinDestination,
                   currentSpeed: carSpeed,
-                  nearbyCount: _radarRangeMeters > 0 ? provider.nearbyVehicles.length : 0,
-                  isConnected: provider.isConnected,
+                  nearbyCount: _radarRangeMeters > 0
+                      ? provider.nearbyVehicles
+                          .where((v) =>
+                              _distanceBetween(carPos.latitude, carPos.longitude, v.lat, v.lng) <=
+                              _radarRangeMeters)
+                          .length
+                      : 0,
                   onConnectionTap: () => _handleConnectionTap(provider),
                   onSearchTap: () => _showDestinationPicker(provider),
                   onStartNavigation: () {
