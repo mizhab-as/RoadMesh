@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import '../providers/driving_provider.dart';
+import '../config/constants.dart';
 import 'driving_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _serverController.text = 'ws://127.0.0.1:3000/ws';
+    _serverController.text = AppConstants.defaultWsUrl;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _warmUpLocation();
@@ -328,6 +329,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               _presetChip('🔌 USB (127.0.0.1)', 'ws://127.0.0.1:3000/ws'),
               _presetChip('📱 Emulator (10.0.2.2)', 'ws://10.0.2.2:3000/ws'),
               _presetChip('🌐 Wi-Fi (10.210.147.50)', 'ws://10.210.147.50:3000/ws'),
+              _presetChip('☁️ Render Cloud', AppConstants.renderCloudWsUrl),
             ],
           ),
         ],

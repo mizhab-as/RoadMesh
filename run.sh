@@ -152,7 +152,14 @@ run_tests() {
 
 # ─── Command-Line Argument Handling ──────────────────────────────────────────
 case "$1" in
-    all|server)
+    master|--master)
+        shift
+        exec "$ROOT_DIR/master.sh" "$@"
+        ;;
+    all)
+        exec "$ROOT_DIR/master.sh" --all
+        ;;
+    server)
         banner
         start_server
         exit 0
@@ -172,8 +179,10 @@ case "$1" in
         exit 0
         ;;
     mobile)
-        "$ROOT_DIR/start_mobile.sh"
-        exit 0
+        exec "$ROOT_DIR/master.sh" --mobile
+        ;;
+    cloud|deploy)
+        exec "$ROOT_DIR/master.sh" --deploy
         ;;
     test)
         run_tests
@@ -189,47 +198,54 @@ esac
 while true; do
     banner
     echo -e "${BOLD}Select an action:${RESET}"
-    echo -e "  ${GREEN}[1] 🚀 START ROADMESH V2X CORE SERVER & LIVE MAP DASHBOARD${RESET}"
-    echo -e "  [2] 📱 Pair Android Phone via USB (adb reverse tunnel)"
-    echo -e "  [3] 🚸 Start Arduino Uno V2I Smart Crossing Gateway"
-    echo -e "  [4] 📲 Launch Flutter Mobile App on Device"
-    echo -e "  [5] 🧪 Run Automated Verification Tests (Vitest + TypeScript)"
-    echo -e "  [6] 🛑 Stop All Running RoadMesh Background Services"
-    echo -e "  [7] ❌ Exit"
+    echo -e "  ${GREEN}${BOLD}[1] 🚀 Master Orchestrator (1-Click Run Server + Phone + Dashboard)${RESET}"
+    echo -e "  [2] 🖥️  Start RoadMesh Core Server (:3000) & Open Dashboard"
+    echo -e "  [3] 📱 Pair Android Phone via USB (adb reverse tunnel)"
+    echo -e "  [4] 📲 Setup, Install & Launch Mobile App on Connected Phone"
+    echo -e "  [5] 🚸 Start Arduino Uno V2I Smart Crossing Gateway"
+    echo -e "  [6] ☁️  Cloud & Live Product Deployment Assistant (Render & Vercel)"
+    echo -e "  [7] 🧪 Run Automated Verification Tests (Vitest + TypeScript)"
+    echo -e "  [8] 🛑 Stop All Running RoadMesh Background Services"
+    echo -e "  [9] ❌ Exit"
     echo ""
-    read -p "Enter choice [1-7]: " choice
+    read -p "Enter choice [1-9]: " choice
 
     case $choice in
         1)
+            exec "$ROOT_DIR/master.sh" --all
+            ;;
+        2)
             start_server
             break
             ;;
-        2)
+        3)
             pair_android_usb
             read -p "Press Enter to return to menu..."
             ;;
-        3)
+        4)
+            exec "$ROOT_DIR/master.sh" --mobile
+            ;;
+        5)
             start_gateway
             break
             ;;
-        4)
-            start_app
-            break
+        6)
+            exec "$ROOT_DIR/master.sh" --deploy
             ;;
-        5)
+        7)
             run_tests
             read -p "Press Enter to return to menu..."
             ;;
-        6)
+        8)
             stop_all
             read -p "Press Enter to return to menu..."
             ;;
-        7)
+        9)
             echo -e "\n${CYAN}Exiting RoadMesh. Safe driving! 🚗${RESET}\n"
             exit 0
             ;;
         *)
-            echo -e "${RED}Invalid choice. Please choose 1-7.${RESET}"
+            echo -e "${RED}Invalid choice. Please choose 1-9.${RESET}"
             sleep 1
             ;;
     esac

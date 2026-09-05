@@ -463,11 +463,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ─── Backend Target Resolution (Localhost / Render Cloud / Custom) ────────
+    function getBackendBaseUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('backend')) {
+            return params.get('backend').replace(/\/$/, '');
+        }
+        const saved = localStorage.getItem('roadmesh_backend_url');
+        if (saved) {
+            return saved.replace(/\/$/, '');
+        }
+        return window.location.origin;
+    }
+
+    function getWebSocketUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('ws')) {
+            return params.get('ws');
+        }
+        const base = getBackendBaseUrl();
+        const wsProto = base.startsWith('https:') ? 'wss:' : 'ws:';
+        const host = base.replace(/^https?:\/\//, '');
+        return `${wsProto}//${host}/ws`;
+    }
+
+    const backendLabel = document.getElementById('backend-target-label');
+    const btnSwitchBackend = document.getElementById('btn-switch-backend');
+    function updateBackendBadge() {
+        if (!backendLabel) return;
+        const current = getBackendBaseUrl();
+        if (current.includes('localhost') || current.includes('127.0.0.1')) {
+            backendLabel.textContent = 'Local:3000';
+        } else if (current.includes('onrender.com')) {
+            backendLabel.textContent = 'Render Cloud';
+        } else {
+            try {
+                backendLabel.textContent = new URL(current).hostname;
+            } catch (e) {
+                backendLabel.textContent = 'Remote';
+            }
+        }
+    }
+    updateBackendBadge();
+
+    if (btnSwitchBackend) {
+        btnSwitchBackend.addEventListener('click', () => {
+            const current = getBackendBaseUrl();
+            const choice = prompt(
+                `Enter RoadMesh Backend Server URL:\n\n• For Local Dev: http://localhost:3000\n• For Render Cloud: https://your-roadmesh-server.onrender.com\n\nCurrent: ${current}`,
+                current
+            );
+            if (choice !== null && choice.trim() !== '') {
+                const clean = choice.trim().replace(/\/$/, '');
+                localStorage.setItem('roadmesh_backend_url', clean);
+                window.location.reload();
+            }
+        });
+    }
+
     // ─── WebSocket Real-Time Connection ───────────────────────────────────────
     let ws = null;
     function connectWebSocket() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        const wsUrl = getWebSocketUrl();
 
         try {
             ws = new WebSocket(wsUrl);
@@ -522,14 +579,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── REST Polling Fallback & Server Stats ──────────────────────────────────
     async function fetchStats() {
         try {
-            const res = await fetch('/stats');
+            const base = getBackendBaseUrl();
+            const res = await fetch(`${base}/stats`);
             if (res.ok) {
                 const data = await res.json();
                 if (activeVehiclesEl) activeVehiclesEl.textContent = data.totalVehicles || 0;
                 if (telemetryCountBadge) telemetryCountBadge.textContent = `${data.totalVehicles || 0} Devices`;
             }
 
-            const healthRes = await fetch('/health');
+            const healthRes = await fetch(`${base}/health`);
             if (healthRes.ok) {
                 const data = await healthRes.json();
                 const uptimeSec = Math.floor(data.uptime);
@@ -543,7 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchVehicles() {
         try {
-            const res = await fetch('/vehicles');
+            const base = getBackendBaseUrl();
+            const res = await fetch(`${base}/vehicles`);
             if (!res.ok) return;
 
             const data = await res.json();
@@ -555,15 +614,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Mobile Pairing & Tactical Controls ──────────────────────────────────
     async function fetchConnectionInfo() {
-        const isCloudHost = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const base = getBackendBaseUrl();
+        const isCloudHost = base.startsWith('https:') || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
         if (isCloudHost) {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            if (wsEndpointUrlInput) wsEndpointUrlInput.value = `${protocol}//${window.location.host}/ws`;
+            if (wsEndpointUrlInput) wsEndpointUrlInput.value = getWebSocketUrl();
             return;
         }
 
         try {
-            const res = await fetch('/connect');
+            const res = await fetch(`${base}/connect`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.wifiWsUrls && data.wifiWsUrls.length > 0) {
@@ -637,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setRsuBeaconLocation(rsuLat, rsuLng);
 
                 // Post pedestrian crossing to spatial engine
-                await fetch('/vehicles', {
+                await fetch(`${getBackendBaseUrl()}/vehicles`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

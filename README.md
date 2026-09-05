@@ -59,9 +59,33 @@ graph TB
 
 ---
 
-## 🚀 Quick Start (Docker)
+## ⚡ Master Orchestration (One-Click Run Everything)
 
-Run the full stack (Server + Admin Dashboard + Nginx Proxy) in seconds:
+Run the full RoadMesh platform (Core Server, Tactical Map Dashboard, and connected Android phone via ADB reverse tunnel) with a single command:
+
+```bash
+./master.sh --all
+```
+
+Or start the interactive CLI menu:
+```bash
+./master.sh
+```
+
+| Flag | Purpose |
+|---|---|
+| `./master.sh --all` | Starts server, configures USB tunnel, installs/launches app on phone, opens dashboard |
+| `./master.sh --server` | Starts backend on port 3000 & opens browser dashboard |
+| `./master.sh --mobile` | Connects phone, sets up reverse tunnel, installs app & grants GPS permissions |
+| `./master.sh --cloud <url>` | Compiles & deploys mobile app targeted to live Render cloud server |
+| `./master.sh --status` | Live diagnostic of server, connected phone, tunnels, and active nodes |
+| `./master.sh --stop` | Stops all background services |
+
+---
+
+## 🐳 Quick Start (Docker)
+
+Run the containerized stack (Server + Admin Dashboard + Nginx Proxy):
 
 ```bash
 docker-compose up -d --build
@@ -69,6 +93,14 @@ docker-compose up -d --build
 
 - **Admin Web Dashboard**: [`http://localhost/dashboard`](http://localhost/dashboard)
 - **WebSocket Endpoint**: `ws://localhost/ws`
+
+---
+
+## ☁️ Cloud & Live Product Deployment (Render & Vercel)
+
+- **Render Web Service**: One-click deployment via blueprint [`render.yaml`](render.yaml) for backend WebSockets and spatial AI.
+- **Vercel Edge CDN**: Instant dashboard deployment via [`vercel.json`](vercel.json).
+- Detailed guide: [docs/CLOUD_DEPLOYMENT.md](docs/CLOUD_DEPLOYMENT.md).
 
 ---
 

@@ -10,7 +10,13 @@ class AppConstants {
     return '10.39.66.135'; // PC's Wi-Fi IP for direct mobile device connection
   }
   static const int defaultServerPort = 3000;
-  static String get defaultWsUrl => 'ws://$defaultServerHost:$defaultServerPort/ws';
+  static const String renderCloudWsUrl = 'wss://roadmesh-server.onrender.com/ws';
+
+  static const String _envWsUrl = String.fromEnvironment('ROAD_MESH_WS_URL');
+  static String get defaultWsUrl {
+    if (_envWsUrl.isNotEmpty) return _envWsUrl;
+    return 'ws://$defaultServerHost:$defaultServerPort/ws';
+  }
 
   // Timing
   static const int positionUpdateIntervalMs = 1000;
