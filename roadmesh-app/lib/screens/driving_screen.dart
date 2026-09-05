@@ -1213,7 +1213,7 @@ class _DrivingScreenState extends State<DrivingScreen>
                   Switch(
                     value: _isAutoSpeedLimit,
                     activeTrackColor: const Color(0xFF2563EB),
-                    activeThumbColor: Colors.white,
+                    activeColor: Colors.white,
                     onChanged: (val) {
                       setState(() {
                         _isAutoSpeedLimit = val;
@@ -1273,7 +1273,7 @@ class _DrivingScreenState extends State<DrivingScreen>
                   Switch(
                     value: _showSpeedLimitSign,
                     activeTrackColor: const Color(0xFF2563EB),
-                    activeThumbColor: Colors.white,
+                    activeColor: Colors.white,
                     onChanged: (val) {
                       setState(() {
                         _showSpeedLimitSign = val;
