@@ -15,7 +15,6 @@
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER_DIR="$ROOT_DIR/roadmesh-server"
 APP_DIR="$ROOT_DIR/roadmesh-app"
-GATEWAY_DIR="$ROOT_DIR/arduino/gateway"
 PID_FILE="$ROOT_DIR/.roadmesh_pids"
 SERVER_LOG="$ROOT_DIR/server.log"
 APK_PATH="$APP_DIR/build/app/outputs/flutter-apk/app-debug.apk"
@@ -327,19 +326,58 @@ deploy_mobile_app() {
         echo -e "   ${GREEN}✓ Pre-built APK is up-to-date.${RESET}"
     fi
 
-    # Install to phone with auto-recovery for signature mismatch
+    # Install to phone with auto-recovery for debug testOnly APKs, signature mismatch, and OEM blockers
     echo -e "   ${CYAN}📲 Installing APK onto device...${RESET}"
     local INSTALL_OUT
-    if ! INSTALL_OUT=$(adb -s "$DEVICE_ID" install -r "$APK_PATH" 2>&1); then
+    local INSTALL_SUCCESS=false
+
+    # Try 1: Standard install with testOnly (-t) and downgrade (-d) flags
+    INSTALL_OUT=$(adb -s "$DEVICE_ID" install -r -d -t "$APK_PATH" 2>&1)
+    if [ $? -eq 0 ] && ! echo "$INSTALL_OUT" | grep -qi "fail"; then
+        INSTALL_SUCCESS=true
+    else
+        # Try 2: Recover from signature mismatch
         if echo "$INSTALL_OUT" | grep -q "INSTALL_FAILED_UPDATE_INCOMPATIBLE"; then
             echo -e "   ${YELLOW}⚠️  Existing app signature mismatch detected.${RESET}"
             echo -e "   ${CYAN}Cleaning previous version and performing fresh install...${RESET}"
             adb -s "$DEVICE_ID" uninstall com.example.roadmesh_app > /dev/null 2>&1 || true
-            adb -s "$DEVICE_ID" install -r "$APK_PATH"
-        else
-            echo -e "${RED}Install failed: $INSTALL_OUT${RESET}"
-            return 1
+            INSTALL_OUT=$(adb -s "$DEVICE_ID" install -r -d -t "$APK_PATH" 2>&1)
+            if [ $? -eq 0 ] && ! echo "$INSTALL_OUT" | grep -qi "fail"; then
+                INSTALL_SUCCESS=true
+            fi
         fi
+
+        # Try 3: Non-streamed install (fixes Samsung One UI streamed socket drops)
+        if [ "$INSTALL_SUCCESS" = false ]; then
+            echo -e "   ${CYAN}Retrying with non-streamed install...${RESET}"
+            INSTALL_OUT=$(adb -s "$DEVICE_ID" install --no-streaming -r -d -t "$APK_PATH" 2>&1)
+            if [ $? -eq 0 ] && ! echo "$INSTALL_OUT" | grep -qi "fail"; then
+                INSTALL_SUCCESS=true
+            fi
+        fi
+
+        # Try 4: Full uninstall + reinstall
+        if [ "$INSTALL_SUCCESS" = false ]; then
+            echo -e "   ${CYAN}Attempting fresh reinstall...${RESET}"
+            adb -s "$DEVICE_ID" uninstall com.example.roadmesh_app > /dev/null 2>&1 || true
+            INSTALL_OUT=$(adb -s "$DEVICE_ID" install -r -d -t "$APK_PATH" 2>&1)
+            if [ $? -eq 0 ] && ! echo "$INSTALL_OUT" | grep -qi "fail"; then
+                INSTALL_SUCCESS=true
+            fi
+        fi
+    fi
+
+    if [ "$INSTALL_SUCCESS" = false ]; then
+        echo -e "${RED}Install failed: $INSTALL_OUT${RESET}"
+        echo -e "\n${YELLOW}${BOLD}👉 SAMSUNG (ONE UI) FIX:${RESET}"
+        echo -e "   1. ${BOLD}Disable Samsung Auto Blocker:${RESET}"
+        echo -e "      Open phone ${CYAN}Settings${RESET} ➔ ${CYAN}Security and privacy${RESET} ➔ ${CYAN}Auto Blocker${RESET} ➔ Toggle ${BOLD}OFF${RESET}"
+        echo -e "      ${DIM}(Auto Blocker silently kills USB / ADB app installations on Samsung Galaxy phones)${RESET}"
+        echo -e "   2. ${BOLD}Keep Phone Unlocked:${RESET}"
+        echo -e "      If Google Play Protect popup appears, tap ${BOLD}'Install anyway'${RESET}"
+        echo -e "   3. ${BOLD}Developer Options:${RESET}"
+        echo -e "      Ensure ${CYAN}Install via USB${RESET} is enabled in Developer Options"
+        return 1
     fi
     echo -e "   ${GREEN}✓ RoadMesh App installed.${RESET}"
 
