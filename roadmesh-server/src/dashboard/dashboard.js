@@ -139,65 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const vehicleMarkers = {};
     const vehicleThreats = {};
 
-    // ─── Dynamic Arduino V2I RSU Beacon ───────────────────────────────────────
-    let schoolCoords = null;
-    let schoolCircle = null;
-    let rsuMarker = null;
-
-    const rsuCustomIcon = L.divIcon({
-        className: 'rsu-marker',
-        html: `
-            <div style="position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #141416; border: 2px solid #F59E0B; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.35);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
-                    <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
-                    <circle cx="12" cy="12" r="2"/>
-                    <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
-                    <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
-                </svg>
-            </div>
-        `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-    });
-
-    function setRsuBeaconLocation(lat, lng) {
-        schoolCoords = [lat, lng];
-        if (!schoolCircle) {
-            schoolCircle = L.circle(schoolCoords, {
-                color: '#F59E0B',
-                fillColor: '#F59E0B',
-                fillOpacity: 0.12,
-                radius: 130,
-                weight: 1.5,
-                dashArray: '4, 4'
-            }).addTo(map);
-        } else {
-            schoolCircle.setLatLng(schoolCoords);
-        }
-
-        if (!rsuMarker) {
-            rsuMarker = L.marker(schoolCoords, { icon: rsuCustomIcon })
-                .addTo(map)
-                .bindPopup(`
-                    <div style="color: var(--text-primary); font-family: var(--font-sans); font-size: 12px; line-height: 1.5; min-width: 170px;">
-                        <strong style="color: #F59E0B; display: block; margin-bottom: 4px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Smart V2I RSU Beacon</strong>
-                        <div>Zone: <b>Pedestrian Crossing</b></div>
-                        <div>Hardware: <b>Arduino Uno (Pin 2 / LED 13)</b></div>
-                        <div>Advisory Speed: <b>20 km/h</b></div>
-                    </div>
-                `);
-        } else {
-            rsuMarker.setLatLng(schoolCoords);
-        }
-    }
-
     // ─── DOM References ───────────────────────────────────────────────────────
     const activeVehiclesEl = document.getElementById('active-vehicles-count');
     const activeAlertsEl = document.getElementById('active-alerts-count');
     const wsStatusVal = document.getElementById('ws-status-val');
     const wsDot = document.getElementById('ws-dot');
-    const rsuStatusVal = document.getElementById('rsu-status-val');
     const threatLevelText = document.getElementById('threat-level-text');
     const alertBadgeCount = document.getElementById('alert-badge-count');
     const telemetryCountBadge = document.getElementById('telemetry-count-badge');
@@ -212,9 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCopyWs = document.getElementById('btn-copy-ws');
     const btnCopyAdb = document.getElementById('btn-copy-adb');
     const btnFocusDevices = document.getElementById('btn-focus-devices');
-    const btnTriggerArduino = document.getElementById('btn-trigger-arduino');
-    const arduinoStatusSub = document.getElementById('arduino-status-sub');
-    const arduinoLed = document.getElementById('arduino-led-indicator');
     let hasAutoFramed = false;
 
     // Audio Controls
@@ -276,16 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Update Map Markers ───────────────────────────────────────────────────
     function updateMapMarkers(vehicles) {
-        let hasPedestrianCross = false;
         const currentIds = new Set();
 
         vehicles.forEach(v => {
             currentIds.add(v.id);
             const isThreat = Boolean(vehicleThreats[v.id]);
-
-            if (schoolCoords && v.vehicleType === 'PEDESTRIAN' && Math.abs(v.lat - schoolCoords[0]) < 0.002 && Math.abs(v.lng - schoolCoords[1]) < 0.002) {
-                hasPedestrianCross = true;
-            }
 
             if (vehicleMarkers[v.id]) {
                 const marker = vehicleMarkers[v.id];
@@ -322,25 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vehicles.length > 0 && !hasAutoFramed) {
             focusOnActiveVehicles();
             hasAutoFramed = true;
-        }
-
-        // Arduino RSU Visual State
-        if (hasPedestrianCross) {
-            if (schoolCircle) schoolCircle.setStyle({ color: '#EF4444', fillColor: '#EF4444', fillOpacity: 0.28 });
-            if (rsuStatusVal) {
-                rsuStatusVal.textContent = 'Active Hazard';
-                rsuStatusVal.style.color = 'var(--status-danger)';
-            }
-            if (arduinoLed) arduinoLed.classList.add('active');
-            if (arduinoStatusSub) arduinoStatusSub.textContent = 'Pedestrian Crossing Strobe (Pin 13)';
-        } else {
-            if (schoolCircle) schoolCircle.setStyle({ color: '#F59E0B', fillColor: '#F59E0B', fillOpacity: 0.12 });
-            if (rsuStatusVal) {
-                rsuStatusVal.textContent = 'Monitoring';
-                rsuStatusVal.style.color = 'var(--status-warn)';
-            }
-            if (arduinoLed) arduinoLed.classList.remove('active');
-            if (arduinoStatusSub) arduinoStatusSub.textContent = 'Arduino Pin 2 Active';
         }
     }
 
@@ -681,52 +600,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ─── Arduino Pedestrian Button Simulation ─────────────────────────────────
-    if (btnTriggerArduino) {
-        btnTriggerArduino.addEventListener('click', async () => {
-            initAudio();
-            btnTriggerArduino.disabled = true;
-            if (arduinoLed) arduinoLed.classList.add('active');
-            if (arduinoStatusSub) arduinoStatusSub.textContent = 'Active Pedestrian Strobe (Pin 13)';
-
-            try {
-                const center = map.getCenter();
-                const rsuLat = center.lat;
-                const rsuLng = center.lng;
-                setRsuBeaconLocation(rsuLat, rsuLng);
-
-                // Post pedestrian crossing to spatial engine
-                await fetch(`${getBackendBaseUrl()}/vehicles`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: 'arduino-uno-crossing-1',
-                        vehicleType: 'PEDESTRIAN',
-                        lat: rsuLat,
-                        lng: rsuLng,
-                        speed: 1.4,
-                        heading: 90,
-                        timestamp: Date.now()
-                    })
-                });
-
-                appendAlert({
-                    hazardType: 'V2I School Crossing Beacon',
-                    description: 'Arduino Uno detected pedestrian button press on Pin 2. Warning beacon active. Advisory: 20 km/h.',
-                    timeToCollisionSec: 2.0,
-                    vehicleId: 'arduino-uno-crossing-1'
-                });
-
-                setTimeout(() => {
-                    btnTriggerArduino.disabled = false;
-                    if (arduinoLed) arduinoLed.classList.remove('active');
-                    if (arduinoStatusSub) arduinoStatusSub.textContent = 'Arduino Pin 2 Active';
-                }, 8000);
-            } catch (e) {
-                btnTriggerArduino.disabled = false;
-            }
-        });
-    }
 
     // ─── Startup ──────────────────────────────────────────────────────────────
     if (window.lucide) {

@@ -4,15 +4,12 @@
 # 🚗 RoadMesh — Real-Time Smartphone V2X Platform & Master Orchestrator
 # ═══════════════════════════════════════════════════════════════════════════════
 # 100% Real-Time Smartphone Telemetry Architecture:
-#   • V2V (Vehicle-to-Vehicle): Flutter Mobile GPS + Compass Telemetry
-#   • V2I (Vehicle-to-Infrastructure): Arduino UNO Smart School Crossing Beacon
 #   • Spatial Core: Geohash Spatial Grid + Time-to-Collision (TCA) AI Engine
 #   • Live Operations Console: High-Contrast Tactical Map Dashboard
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER_DIR="$ROOT_DIR/roadmesh-server"
-GATEWAY_DIR="$ROOT_DIR/arduino/gateway"
 APP_DIR="$ROOT_DIR/roadmesh-app"
 
 PID_FILE="$ROOT_DIR/.roadmesh_pids"
@@ -48,10 +45,9 @@ banner() {
     echo "╔══════════════════════════════════════════════════════════════════════════╗"
     echo "║                                                                          ║"
     echo "║     🚗  ROADMESH — REAL-TIME SMARTPHONE V2X PLATFORM                     ║"
-    echo "║     100% Live GPS Telemetry • Zero Simulation • Pure V2V / V2I          ║"
+    echo "║     100% Live GPS Telemetry • Zero Hardware • Pure Smartphone V2X       ║"
     echo "║                                                                          ║"
-    echo "║     • Live V2V: Flutter Mobile App (Continuous High-Accuracy GPS)        ║"
-    echo "║     • Live V2I: Arduino UNO Smart School Crossing Beacon                 ║"
+    echo "║     • Live V2X: Flutter Mobile App (Continuous High-Accuracy GPS)        ║"
     echo "║     • Console:  Tactical Geospatial Operations Map (:3000)               ║"
     echo "║                                                                          ║"
     echo "╚══════════════════════════════════════════════════════════════════════════╝"
@@ -123,12 +119,6 @@ pair_android_usb() {
     echo -e "   The Flutter app can now connect to: ${BOLD}${CYAN}ws://localhost:3000/ws${RESET}"
 }
 
-start_gateway() {
-    echo -e "\n${MAGENTA}🚸 Starting Arduino Uno V2I Smart Crossing Gateway...${RESET}"
-    echo -e "   ${YELLOW}Hint: You can press [SPACE] in the gateway anytime to simulate pedestrian button!${RESET}"
-    cd "$GATEWAY_DIR" || exit 1
-    node gateway.js
-}
 
 start_app() {
     echo -e "\n${BLUE}📱 Launching Flutter Mobile App...${RESET}"
@@ -168,11 +158,6 @@ case "$1" in
         pair_android_usb
         exit 0
         ;;
-    arduino|gateway|v2i)
-        banner
-        start_gateway
-        exit 0
-        ;;
     app|flutter)
         banner
         start_app
@@ -202,13 +187,12 @@ while true; do
     echo -e "  [2] 🖥️  Start RoadMesh Core Server (:3000) & Open Dashboard"
     echo -e "  [3] 📱 Pair Android Phone via USB (adb reverse tunnel)"
     echo -e "  [4] 📲 Setup, Install & Launch Mobile App on Connected Phone"
-    echo -e "  [5] 🚸 Start Arduino Uno V2I Smart Crossing Gateway"
-    echo -e "  [6] ☁️  Cloud & Live Product Deployment Assistant (Render & Vercel)"
-    echo -e "  [7] 🧪 Run Automated Verification Tests (Vitest + TypeScript)"
-    echo -e "  [8] 🛑 Stop All Running RoadMesh Background Services"
-    echo -e "  [9] ❌ Exit"
+    echo -e "  [5] ☁️  Cloud & Live Product Deployment Assistant (Render & Vercel)"
+    echo -e "  [6] 🧪 Run Automated Verification Tests (Vitest + TypeScript)"
+    echo -e "  [7] 🛑 Stop All Running RoadMesh Background Services"
+    echo -e "  [8] ❌ Exit"
     echo ""
-    read -p "Enter choice [1-9]: " choice
+    read -p "Enter choice [1-8]: " choice
 
     case $choice in
         1)
@@ -226,27 +210,24 @@ while true; do
             exec "$ROOT_DIR/master.sh" --mobile
             ;;
         5)
-            start_gateway
-            break
-            ;;
-        6)
             exec "$ROOT_DIR/master.sh" --deploy
             ;;
-        7)
+        6)
             run_tests
             read -p "Press Enter to return to menu..."
             ;;
-        8)
+        7)
             stop_all
             read -p "Press Enter to return to menu..."
             ;;
-        9)
+        8)
             echo -e "\n${CYAN}Exiting RoadMesh. Safe driving! 🚗${RESET}\n"
             exit 0
             ;;
         *)
-            echo -e "${RED}Invalid choice. Please choose 1-9.${RESET}"
+            echo -e "${RED}Invalid option.${RESET}"
             sleep 1
             ;;
     esac
 done
+
