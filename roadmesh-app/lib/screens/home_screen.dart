@@ -151,23 +151,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
 
           // ─── 2. Main Content ───────────────────────────────────────────
-          SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 32),
-                  _buildHeader(),
-                  const SizedBox(height: 36),
-                  _buildServerInput(),
-                  const SizedBox(height: 32),
-                  _buildStartButton(),
-                  const SizedBox(height: 28),
-                  _buildFooterTrustBadge(),
-                  const SizedBox(height: 16),
-                ],
+          GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            behavior: HitTestBehavior.opaque,
+            child: SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 32),
+                    _buildHeader(),
+                    const SizedBox(height: 36),
+                    _buildServerInput(),
+                    const SizedBox(height: 32),
+                    _buildStartButton(),
+                    const SizedBox(height: 28),
+                    _buildFooterTrustBadge(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
           ),
@@ -299,6 +303,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             child: TextField(
               controller: _serverController,
+              cursorColor: const Color(0xFF10B981),
               style: const TextStyle(
                 color: Color(0xFF0F172A),
                 fontFamily: 'Inter',
@@ -307,6 +312,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               decoration: const InputDecoration(
                 border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 prefixIcon: Icon(
                   Icons.dns_rounded,
@@ -341,6 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final isCurrent = _serverController.text == url;
     return GestureDetector(
       onTap: () {
+        FocusScope.of(context).unfocus();
         setState(() {
           _serverController.text = url;
         });
