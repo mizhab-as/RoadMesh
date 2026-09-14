@@ -136,7 +136,7 @@ stop_services() {
     echo -e "${GREEN}✅ All RoadMesh background services stopped.${RESET}\n"
 }
 
-# ─── Regenerate Brand Assets (Icons & Splash Screens) ────────────────────────
+# ─── Regenerate Brand Assets (Icons only) ─────────────────────────────────────
 regenerate_brand_assets() {
     echo -e "${MAGENTA}${BOLD}🎨 Regenerating RoadMesh Brand Assets...${RESET}"
     cd "$APP_DIR" || exit 1
@@ -145,11 +145,7 @@ regenerate_brand_assets() {
     dart run flutter_launcher_icons
     echo -e "   ${GREEN}✓ Launcher icons generated (Android adaptive + iOS squircle).${RESET}"
 
-    echo -e "   ${CYAN}Running flutter_native_splash...${RESET}"
-    dart run flutter_native_splash:create
-    echo -e "   ${GREEN}✓ Native splash screens generated (Android 12+ + legacy + iOS).${RESET}"
-
-    echo -e "${GREEN}✅ Brand assets ready. App icon, adaptive icon & splash are up to date.${RESET}\n"
+    echo -e "${GREEN}✅ Brand assets ready. App icon & adaptive icon are up to date.${RESET}\n"
 }
 
 # ─── Package Release APK into releases/ ───────────────────────────────────────

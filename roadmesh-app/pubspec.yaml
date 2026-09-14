@@ -55,7 +55,6 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
-  flutter_native_splash: ^2.4.1
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -66,15 +65,6 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/icons/adaptive-icon-foreground.png"
   remove_alpha_ios: true
 
-flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/splash/splash-icon.png
-  android_12:
-    image: assets/splash/splash-icon.png
-    color: "#FFFFFF"
-  android: true
-  ios: true
-  web: false
 
 flutter:
   uses-material-design: true
