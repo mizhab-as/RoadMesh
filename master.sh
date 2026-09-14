@@ -3,13 +3,17 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🚗 RoadMesh — Master Orchestration & Deployment Suite
 # ═══════════════════════════════════════════════════════════════════════════════
+# DEFAULT (no args): Runs EVERYTHING — icons, server, phone deploy, dashboard
+#
 # Full Stack V2X Management:
-#   • Brand Assets: flutter_launcher_icons + flutter_native_splash auto-generation
-#   • Mobile App: Flutter Android auto-detect, reverse ADB tunnel, build, install & launch
+#   • App Icons: flutter_launcher_icons regeneration (adaptive Android + iOS)
+#   • Mobile App: Flutter Android auto-detect, ADB reverse, build, install & launch
+#     — In-app animated splash (white/green mesh beacon + ROADMESH text)
+#     — No OS-level icon splash (flutter_native_splash removed)
 #   • Backend Core: Node 20 TypeScript spatial AI engine, WebSocket & REST API
 #   • Web Console: High-contrast Tactical Geospatial Map Dashboard
-#   • Release: Release-mode APK packaged into releases/ with SHA-256 checksum
-#   • Cloud & Live: Render backend deploy + Vercel dashboard + Cloud URL mobile builder
+#   • Release: Obfuscated release APK into releases/ with SHA-256 checksum
+#   • Cloud: Render backend deploy + Vercel dashboard + Cloud URL mobile builder
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Note: not using set -e so phone/ADB failures don't kill server launch
@@ -538,9 +542,10 @@ run_all() {
     echo -e "${GREEN}══════════════════════════════════════════════════════════════════════════════${RESET}\n"
 }
 
-# ─── CLI Arguments Dispatcher ─────────────────────────────────────────────────
+# ─── CLI Dispatcher (no args = run everything) ────────────────────────────────
 case "$1" in
-    --all|-a|all)
+    ""|-a|--all|all)
+        # DEFAULT: just run ./master.sh — does everything
         run_all
         exit 0
         ;;
@@ -561,6 +566,17 @@ case "$1" in
         detect_and_configure_phone
         exit 0
         ;;
+    --icons|--brand|icons|brand)
+        banner
+        regenerate_brand_assets
+        exit 0
+        ;;
+    --release-apk|release-apk)
+        banner
+        VERSION="${2:-v1.1.0}"
+        package_release_apk "$VERSION"
+        exit 0
+        ;;
     --cloud|cloud)
         if [ -n "$2" ]; then
             banner
@@ -573,17 +589,6 @@ case "$1" in
         ;;
     --deploy|deploy)
         cloud_deployment_wizard
-        exit 0
-        ;;
-    --icons|--brand|icons|brand)
-        banner
-        regenerate_brand_assets
-        exit 0
-        ;;
-    --release-apk|release-apk)
-        banner
-        VERSION="${2:-v1.1.0}"
-        package_release_apk "$VERSION"
         exit 0
         ;;
     --status|status)
@@ -602,91 +607,25 @@ case "$1" in
     --help|-h|help)
         banner
         echo -e "${BOLD}Usage:${RESET} ./master.sh [COMMAND]\n"
+        echo -e "${DIM}Running with no arguments starts the full stack automatically.${RESET}\n"
         echo -e "${BOLD}Commands:${RESET}"
-        echo -e "  ${GREEN}--all, -a${RESET}         1-Click Full Stack: Icons + Server + Phone ADB + App Install + Dashboard"
-        echo -e "  ${CYAN}--server, -s${RESET}      Start Backend Server on port 3000 & open Dashboard"
-        echo -e "  ${BLUE}--mobile, -m${RESET}      Detect Android phone, set up ADB reverse, build, install & launch app"
-        echo -e "  ${YELLOW}--adb${RESET}             Pair Android phone & configure reverse port tunnel only"
-        echo -e "  ${MAGENTA}--icons, --brand${RESET}  Regenerate brand assets: launcher icons & native splash screens"
-        echo -e "  ${MAGENTA}--release-apk [VER]${RESET} Build & package obfuscated release APK into releases/ (e.g. v1.1.0)"
-        echo -e "  ${MAGENTA}--cloud [URL]${RESET}     Build and install mobile app configured with live Render cloud URL"
-        echo -e "  ${MAGENTA}--deploy${RESET}          Cloud deployment assistant for Render and Vercel"
-        echo -e "  ${WHITE}--status${RESET}          Show live system diagnostics (server, phone, tunnels, cloud)"
-        echo -e "  ${CYAN}--test${RESET}            Run Vitest test suite"
-        echo -e "  ${RED}--stop${RESET}            Stop all RoadMesh background processes"
-        echo -e "  ${DIM}--help, -h${RESET}        Show this help screen\n"
+        echo -e "  ${GREEN}(no args)${RESET}            🚀 Run everything: icons + server + phone deploy + dashboard"
+        echo -e "  ${CYAN}--server, -s${RESET}         Start backend server on port 3000 & open dashboard"
+        echo -e "  ${BLUE}--mobile, -m${RESET}         Detect phone, ADB reverse, build, install & launch app"
+        echo -e "  ${YELLOW}--adb${RESET}                Configure USB ADB reverse tunnel only"
+        echo -e "  ${MAGENTA}--icons, --brand${RESET}     Regenerate launcher icons (Android adaptive + iOS)"
+        echo -e "  ${MAGENTA}--release-apk [VER]${RESET}  Build & package obfuscated release APK into releases/"
+        echo -e "  ${MAGENTA}--cloud [URL]${RESET}         Build app for live Render cloud WebSocket URL"
+        echo -e "  ${MAGENTA}--deploy${RESET}              Cloud deployment wizard (Render + Vercel)"
+        echo -e "  ${WHITE}--status${RESET}              Live system diagnostics (server, phone, tunnels)"
+        echo -e "  ${CYAN}--test${RESET}                Run Vitest backend test suite"
+        echo -e "  ${RED}--stop${RESET}                Stop all RoadMesh background processes"
+        echo -e "  ${DIM}--help, -h${RESET}            Show this help\n"
         exit 0
         ;;
+    *)
+        echo -e "${RED}Unknown command: $1${RESET}"
+        echo -e "Run ${BOLD}./master.sh --help${RESET} to see available commands."
+        exit 1
+        ;;
 esac
-
-# ─── Interactive Terminal Menu (Default) ──────────────────────────────────────
-while true; do
-    banner
-    echo -e "${BOLD}Select an action to perform:${RESET}"
-    echo -e "  ${GREEN}${BOLD}[1] 🚀 1-CLICK RUN EVERYTHING (Icons + Server + Phone + Reverse Tunnel + Dashboard)${RESET}"
-    echo -e "  ${CYAN}[2] 🖥️  Start Core Server (:3000) & Open Tactical Map Dashboard${RESET}"
-    echo -e "  ${BLUE}[3] 📱 Setup Connected Phone (ADB Reverse Tunnel + Install & Launch App)${RESET}"
-    echo -e "  ${YELLOW}[4] 🔌 Configure Android USB Port Forwarding (adb reverse tcp:3000 tcp:3000)${RESET}"
-    echo -e "  ${MAGENTA}[5] ☁️  Cloud Deployment Assistant (Render & Vercel for Live Product)${RESET}"
-    echo -e "  ${WHITE}[6] 📊 Live System Diagnostics & Status Check${RESET}"
-    echo -e "  ${CYAN}[7] 🧪 Run Verification & Automated Unit Tests (Vitest)${RESET}"
-    echo -e "  ${MAGENTA}[8] 🎨 Regenerate Brand Assets (Icons & Splash Screens)${RESET}"
-    echo -e "  ${BLUE}[9] 📦 Package Release APK into releases/  ${RESET}"
-    echo -e "  ${RED}[10] 🛑 Stop All Running RoadMesh Background Services${RESET}"
-    echo -e "  [0] ❌ Exit\n"
-    read -p "Enter choice [0-10]: " choice
-
-    case $choice in
-        1)
-            run_all
-            break
-            ;;
-        2)
-            start_server
-            open_dashboard
-            break
-            ;;
-        3)
-            detect_and_configure_phone
-            deploy_mobile_app
-            read -p "Press Enter to return to menu..."
-            ;;
-        4)
-            detect_and_configure_phone
-            read -p "Press Enter to return to menu..."
-            ;;
-        5)
-            cloud_deployment_wizard
-            read -p "Press Enter to return to menu..."
-            ;;
-        6)
-            show_status
-            read -p "Press Enter to return to menu..."
-            ;;
-        7)
-            test_server
-            read -p "Press Enter to return to menu..."
-            ;;
-        8)
-            regenerate_brand_assets
-            read -p "Press Enter to return to menu..."
-            ;;
-        9)
-            read -p "Release version (e.g. v1.1.0): " REL_VER
-            package_release_apk "${REL_VER:-v1.1.0}"
-            read -p "Press Enter to return to menu..."
-            ;;
-        10)
-            stop_services
-            read -p "Press Enter to return to menu..."
-            ;;
-        0)
-            echo -e "\n${CYAN}Exiting RoadMesh. Safe driving! 🚗${RESET}\n"
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Invalid selection. Please choose 0-10.${RESET}"
-            sleep 1
-            ;;
-    esac
-done
