@@ -346,8 +346,8 @@ deploy_mobile_app() {
     elif [ -n "$CLOUD_WS_URL" ]; then
         BUILD_NEEDED=true
     else
-        # If any dart files, assets, or configs are newer than the built APK
-        local NEWEST_SRC=$(find lib assets pubspec.yaml -newer "$APK_PATH" 2>/dev/null | head -n 1)
+        # If any dart files, assets, native configs, or pubspec are newer than the built APK
+        local NEWEST_SRC=$(find lib assets android pubspec.yaml -newer "$APK_PATH" 2>/dev/null | head -n 1)
         if [ -n "$NEWEST_SRC" ]; then
             BUILD_NEEDED=true
         fi
