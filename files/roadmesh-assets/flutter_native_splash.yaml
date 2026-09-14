@@ -1,0 +1,29 @@
+# flutter_native_splash config
+# 1. Add to pubspec.yaml under dev_dependencies:
+#      flutter_native_splash: ^2.4.1
+# 2. Paste this block into pubspec.yaml, then run:
+#      dart run flutter_native_splash:create
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/splash/splash-icon.png
+
+  # Dark-mode variant — the app already has a dark map toggle, so the splash
+  # should follow the system/app theme too.
+  color_dark: "#0F172A"
+  image_dark: assets/splash/splash-icon.png
+
+  android_12:
+    image: assets/splash/splash-icon.png
+    color: "#FFFFFF"
+    image_dark: assets/splash/splash-icon.png
+    color_dark: "#0F172A"
+
+  android: true
+  ios: true
+  web: false
+
+  # RoadMesh's wordmark + tagline aren't part of the native splash image
+  # (Android 12 crops/scales it in ways that break multi-element compositions).
+  # Show them as a branded loading widget in Flutter immediately after launch —
+  # see lib_snippets/splash_screen.dart.

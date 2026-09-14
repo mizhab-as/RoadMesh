@@ -1,0 +1,25 @@
+# flutter_launcher_icons config
+# 1. Add to pubspec.yaml under dev_dependencies:
+#      flutter_launcher_icons: ^0.13.1
+# 2. Paste this block into pubspec.yaml, then run:
+#      dart run flutter_launcher_icons
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app-icon.png"
+  min_sdk_android: 21
+
+  # Android adaptive icon — separate layers, no bg blending issues
+  adaptive_icon_background: "assets/icons/adaptive-icon-background.png"
+  adaptive_icon_foreground: "assets/icons/adaptive-icon-foreground.png"
+
+  # iOS: flutter_launcher_icons flattens transparency, so it uses the
+  # single-layer app-icon.png (already has the light gradient baked in).
+  remove_alpha_ios: true
+
+  web:
+    generate: true
+    image_path: "assets/icons/app-icon.png"
+    background_color: "#FFFFFF"
+    theme_color: "#22C55E"

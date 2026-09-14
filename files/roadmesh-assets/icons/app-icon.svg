@@ -1,0 +1,44 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E7ECF2"/>
+    </radialGradient>
+    <radialGradient id="beaconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2563EB" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <g transform="translate(512,512) scale(4.6) translate(-100,-104)" filter="url(#softShadow)">
+
+    <!-- collision-radar pulse (red, matches the live in-app alert halo) -->
+    <circle cx="100" cy="112" r="24" fill="none" stroke="#EF4444" stroke-width="2" opacity="0.55"/>
+    <circle cx="100" cy="112" r="36" fill="none" stroke="#EF4444" stroke-width="1.5" opacity="0.32"/>
+    <circle cx="100" cy="112" r="48" fill="none" stroke="#EF4444" stroke-width="1.1" opacity="0.16"/>
+
+    <!-- mesh edges (structural, road-like) -->
+    <g stroke="#334155" stroke-width="3.6" stroke-linecap="round">
+      <line x1="100" y1="46" x2="52" y2="148"/>
+      <line x1="100" y1="46" x2="148" y2="148"/>
+      <line x1="52" y1="148" x2="148" y2="148"/>
+      <line x1="100" y1="46" x2="100" y2="112"/>
+      <line x1="100" y1="112" x2="52" y2="148"/>
+      <line x1="100" y1="112" x2="148" y2="148"/>
+    </g>
+
+    <!-- outer mesh nodes: connected vehicles, safe/green -->
+    <circle cx="100" cy="46" r="8" fill="#22C55E"/>
+    <circle cx="52" cy="148" r="8" fill="#22C55E"/>
+    <circle cx="148" cy="148" r="8" fill="#22C55E"/>
+
+    <!-- ego vehicle beacon: blue, center -->
+    <circle cx="100" cy="112" r="22" fill="url(#beaconGlow)"/>
+    <circle cx="100" cy="112" r="10.5" fill="#2563EB"/>
+  </g>
+</svg>
