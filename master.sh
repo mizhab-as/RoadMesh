@@ -4,9 +4,11 @@
 # 🚗 RoadMesh — Master Orchestration & Deployment Suite
 # ═══════════════════════════════════════════════════════════════════════════════
 # Full Stack V2X Management:
+#   • Brand Assets: flutter_launcher_icons + flutter_native_splash auto-generation
 #   • Mobile App: Flutter Android auto-detect, reverse ADB tunnel, build, install & launch
 #   • Backend Core: Node 20 TypeScript spatial AI engine, WebSocket & REST API
 #   • Web Console: High-contrast Tactical Geospatial Map Dashboard
+#   • Release: Release-mode APK packaged into releases/ with SHA-256 checksum
 #   • Cloud & Live: Render backend deploy + Vercel dashboard + Cloud URL mobile builder
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -18,6 +20,8 @@ APP_DIR="$ROOT_DIR/roadmesh-app"
 PID_FILE="$ROOT_DIR/.roadmesh_pids"
 SERVER_LOG="$ROOT_DIR/server.log"
 APK_PATH="$APP_DIR/build/app/outputs/flutter-apk/app-debug.apk"
+RELEASE_APK_SRC="$APP_DIR/build/app/outputs/flutter-apk/app-release.apk"
+RELEASES_DIR="$ROOT_DIR/releases"
 
 # ─── Colors & Typography ──────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -130,6 +134,42 @@ stop_services() {
         echo -e "   ${GREEN}✓ Freed port 3000${RESET}"
     fi
     echo -e "${GREEN}✅ All RoadMesh background services stopped.${RESET}\n"
+}
+
+# ─── Regenerate Brand Assets (Icons & Splash Screens) ────────────────────────
+regenerate_brand_assets() {
+    echo -e "${MAGENTA}${BOLD}🎨 Regenerating RoadMesh Brand Assets...${RESET}"
+    cd "$APP_DIR" || exit 1
+
+    echo -e "   ${CYAN}Running flutter_launcher_icons...${RESET}"
+    dart run flutter_launcher_icons
+    echo -e "   ${GREEN}✓ Launcher icons generated (Android adaptive + iOS squircle).${RESET}"
+
+    echo -e "   ${CYAN}Running flutter_native_splash...${RESET}"
+    dart run flutter_native_splash:create
+    echo -e "   ${GREEN}✓ Native splash screens generated (Android 12+ + legacy + iOS).${RESET}"
+
+    echo -e "${GREEN}✅ Brand assets ready. App icon, adaptive icon & splash are up to date.${RESET}\n"
+}
+
+# ─── Package Release APK into releases/ ───────────────────────────────────────
+package_release_apk() {
+    local VERSION="${1:-v1.1.0}"
+    echo -e "${BLUE}${BOLD}📦 Building & Packaging Release APK ($VERSION)...${RESET}"
+    cd "$APP_DIR" || exit 1
+
+    echo -e "   ${CYAN}Compiling release APK (obfuscated, arm64)...${RESET}"
+    flutter build apk --release --target-platform android-arm64 \
+        --obfuscate --split-debug-info=build/debug-info/
+
+    local DEST="$RELEASES_DIR/roadmesh-${VERSION}.apk"
+    cp "$RELEASE_APK_SRC" "$DEST"
+    local CHECKSUM=$(shasum -a 256 "$DEST" | awk '{print $1}')
+    echo "$CHECKSUM  roadmesh-${VERSION}.apk" > "$DEST.sha256"
+
+    echo -e "   ${GREEN}✓ Release APK: ${BOLD}releases/roadmesh-${VERSION}.apk${RESET}"
+    echo -e "   ${GREEN}✓ SHA-256:      ${BOLD}$CHECKSUM${RESET}"
+    echo -e "${GREEN}✅ Release package ready in releases/.${RESET}\n"
 }
 
 # ─── Build Backend Server ─────────────────────────────────────────────────────
@@ -306,9 +346,9 @@ deploy_mobile_app() {
     elif [ -n "$CLOUD_WS_URL" ]; then
         BUILD_NEEDED=true
     else
-        # If any dart files are newer than the built APK
-        local NEWEST_DART=$(find lib -name "*.dart" -newer "$APK_PATH" 2>/dev/null | head -n 1)
-        if [ -n "$NEWEST_DART" ]; then
+        # If any dart files, assets, or configs are newer than the built APK
+        local NEWEST_SRC=$(find lib assets pubspec.yaml -newer "$APK_PATH" 2>/dev/null | head -n 1)
+        if [ -n "$NEWEST_SRC" ]; then
             BUILD_NEEDED=true
         fi
     fi
@@ -486,6 +526,7 @@ run_all() {
     banner
     echo -e "${GREEN}${BOLD}🚀 RUNNING ALL-IN-ONE ROADMESH ENVIRONMENT SETUP${RESET}\n"
     check_prerequisites
+    regenerate_brand_assets
     start_server
     detect_and_configure_phone || true
     if [ -n "$DEVICE_ID" ]; then
@@ -538,6 +579,17 @@ case "$1" in
         cloud_deployment_wizard
         exit 0
         ;;
+    --icons|--brand|icons|brand)
+        banner
+        regenerate_brand_assets
+        exit 0
+        ;;
+    --release-apk|release-apk)
+        banner
+        VERSION="${2:-v1.1.0}"
+        package_release_apk "$VERSION"
+        exit 0
+        ;;
     --status|status)
         show_status
         exit 0
@@ -555,10 +607,12 @@ case "$1" in
         banner
         echo -e "${BOLD}Usage:${RESET} ./master.sh [COMMAND]\n"
         echo -e "${BOLD}Commands:${RESET}"
-        echo -e "  ${GREEN}--all, -a${RESET}         1-Click Full Stack: Server + Phone ADB Reverse + App Install + Dashboard"
+        echo -e "  ${GREEN}--all, -a${RESET}         1-Click Full Stack: Icons + Server + Phone ADB + App Install + Dashboard"
         echo -e "  ${CYAN}--server, -s${RESET}      Start Backend Server on port 3000 & open Dashboard"
         echo -e "  ${BLUE}--mobile, -m${RESET}      Detect Android phone, set up ADB reverse, build, install & launch app"
         echo -e "  ${YELLOW}--adb${RESET}             Pair Android phone & configure reverse port tunnel only"
+        echo -e "  ${MAGENTA}--icons, --brand${RESET}  Regenerate brand assets: launcher icons & native splash screens"
+        echo -e "  ${MAGENTA}--release-apk [VER]${RESET} Build & package obfuscated release APK into releases/ (e.g. v1.1.0)"
         echo -e "  ${MAGENTA}--cloud [URL]${RESET}     Build and install mobile app configured with live Render cloud URL"
         echo -e "  ${MAGENTA}--deploy${RESET}          Cloud deployment assistant for Render and Vercel"
         echo -e "  ${WHITE}--status${RESET}          Show live system diagnostics (server, phone, tunnels, cloud)"
@@ -573,16 +627,18 @@ esac
 while true; do
     banner
     echo -e "${BOLD}Select an action to perform:${RESET}"
-    echo -e "  ${GREEN}${BOLD}[1] 🚀 1-CLICK RUN EVERYTHING (Server + Phone + Reverse Tunnel + Dashboard)${RESET}"
+    echo -e "  ${GREEN}${BOLD}[1] 🚀 1-CLICK RUN EVERYTHING (Icons + Server + Phone + Reverse Tunnel + Dashboard)${RESET}"
     echo -e "  ${CYAN}[2] 🖥️  Start Core Server (:3000) & Open Tactical Map Dashboard${RESET}"
     echo -e "  ${BLUE}[3] 📱 Setup Connected Phone (ADB Reverse Tunnel + Install & Launch App)${RESET}"
     echo -e "  ${YELLOW}[4] 🔌 Configure Android USB Port Forwarding (adb reverse tcp:3000 tcp:3000)${RESET}"
     echo -e "  ${MAGENTA}[5] ☁️  Cloud Deployment Assistant (Render & Vercel for Live Product)${RESET}"
     echo -e "  ${WHITE}[6] 📊 Live System Diagnostics & Status Check${RESET}"
     echo -e "  ${CYAN}[7] 🧪 Run Verification & Automated Unit Tests (Vitest)${RESET}"
-    echo -e "  ${RED}[8] 🛑 Stop All Running RoadMesh Background Services${RESET}"
-    echo -e "  [9] ❌ Exit\n"
-    read -p "Enter choice [1-9]: " choice
+    echo -e "  ${MAGENTA}[8] 🎨 Regenerate Brand Assets (Icons & Splash Screens)${RESET}"
+    echo -e "  ${BLUE}[9] 📦 Package Release APK into releases/  ${RESET}"
+    echo -e "  ${RED}[10] 🛑 Stop All Running RoadMesh Background Services${RESET}"
+    echo -e "  [0] ❌ Exit\n"
+    read -p "Enter choice [0-10]: " choice
 
     case $choice in
         1)
@@ -616,15 +672,24 @@ while true; do
             read -p "Press Enter to return to menu..."
             ;;
         8)
-            stop_services
+            regenerate_brand_assets
             read -p "Press Enter to return to menu..."
             ;;
         9)
+            read -p "Release version (e.g. v1.1.0): " REL_VER
+            package_release_apk "${REL_VER:-v1.1.0}"
+            read -p "Press Enter to return to menu..."
+            ;;
+        10)
+            stop_services
+            read -p "Press Enter to return to menu..."
+            ;;
+        0)
             echo -e "\n${CYAN}Exiting RoadMesh. Safe driving! 🚗${RESET}\n"
             exit 0
             ;;
         *)
-            echo -e "${RED}Invalid selection. Please choose 1-9.${RESET}"
+            echo -e "${RED}Invalid selection. Please choose 0-10.${RESET}"
             sleep 1
             ;;
     esac
