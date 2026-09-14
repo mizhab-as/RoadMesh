@@ -185,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildHeader() {
     return Column(
       children: [
-        // Pulsing Emerald / Teal Beacon Orb
+        // Pulsing Beacon Orb with Official RoadMesh Mark
         AnimatedBuilder(
           animation: Listenable.merge([_pulseAnim, _glowAnim]),
           builder: (_, __) {
@@ -200,38 +200,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00C853).withValues(alpha: _glowAnim.value * 0.20),
+                        color: const Color(0xFF22C55E).withValues(alpha: _glowAnim.value * 0.25),
                         blurRadius: 40,
                         spreadRadius: 10,
                       ),
                     ],
                   ),
                 ),
-                // Core beacon circle
+                // Core beacon circle with Logo Mark
                 Transform.scale(
                   scale: _pulseAnim.value,
                   child: Container(
-                    width: 84,
-                    height: 84,
+                    width: 88,
+                    height: 88,
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00C853), Color(0xFF00E676)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: Colors.white,
+                      border: Border.all(
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.4),
+                        width: 2.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00C853).withValues(alpha: 0.35),
+                          color: const Color(0xFF0F172A).withValues(alpha: 0.10),
                           blurRadius: 20,
-                          offset: const Offset(0, 6),
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.cell_tower_rounded,
-                      size: 42,
-                      color: Colors.white,
+                    child: Image.asset(
+                      'assets/logo/logo-mark-standalone.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -242,15 +247,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
         const SizedBox(height: 20),
 
-        // Brand Title in clean Inter
-        const Text(
-          'ROADMESH',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF0F172A),
-            letterSpacing: 2.0,
+        // Brand Title with ROAD and MESH styling
+        RichText(
+          text: const TextSpan(
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2.0,
+            ),
+            children: [
+              TextSpan(
+                text: 'ROAD',
+                style: TextStyle(color: Color(0xFF0F172A)),
+              ),
+              TextSpan(
+                text: 'MESH',
+                style: TextStyle(color: Color(0xFF16A34A)),
+              ),
+            ],
           ),
         ),
 
@@ -262,9 +277,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 11,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: Color(0xFF64748B),
-            letterSpacing: 1.8,
+            letterSpacing: 2.2,
           ),
         ),
       ],

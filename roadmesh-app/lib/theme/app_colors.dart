@@ -19,6 +19,15 @@ class AppColors {
   static const Color hyperBlue    = Color(0xFF1D4ED8);   // Deep royal blue accent
   static const Color neonPurple   = Color(0xFF6366F1);   // Indigo accent
 
+  // ─── Brand Mesh Tokens ───────────────────────────────────────────────────────
+  static const Color meshGreen     = Color(0xFF22C55E);  // Active mesh node / safe green
+  static const Color meshGreenDark = Color(0xFF16A34A);  // Pressed / text state
+  static const Color vehicleBlue   = Color(0xFF2563EB);  // Ego-vehicle beacon
+  static const Color alertRed      = Color(0xFFEF4444);  // Real-time collision radar pulse
+  static const Color alertRedTint  = Color(0xFFFEE2E2);  // Alert card background tint
+  static const Color mapBackground = Color(0xFFE7ECF2);  // Neutral map canvas
+  static const Color lineStructure = Color(0xFF334155);  // Mesh link & vector line
+
   // ─── Risk Colors ────────────────────────────────────────────────────────────
   static const Color safeGreen    = Color(0xFF10B981);   // SAFE / connected emerald
   static const Color warningAmber = Color(0xFFF59E0B);   // CAUTION amber
@@ -29,11 +38,21 @@ class AppColors {
   static const Color textSecondary = Color(0xFF475569);   // Secondary slate
   static const Color textMuted     = Color(0xFF64748B);   // Muted slate
   static const Color textHint      = Color(0xFF94A3B8);   // Placeholder slate
+  static const Color darkSurface   = Color(0xFF0F172A);
+  static const Color darkTextPrimary = Color(0xFFF8FAFC);
+  static const Color darkTextSecondary = Color(0xFF94A3B8);
 
   // ─── Glassmorphism & Borders ──────────────────────────────────────────────────
   static const Color glassWhite   = Color(0xFFFFFFFF);  // Pure white card
   static const Color glassBorder  = Color(0xFFE2E8F0);  // Soft border line
   static const Color glassBlue    = Color(0x142563EB);  // Subtle blue tint
+
+  // ─── Icon Radial Background ──────────────────────────────────────────────────
+  static const RadialGradient iconBackground = RadialGradient(
+    center: Alignment(0, -0.24),
+    radius: 0.9,
+    colors: [surface, mapBackground],
+  );
 
   // ─── Gradients ───────────────────────────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(

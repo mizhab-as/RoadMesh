@@ -71,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   static const _pages = [
     _OnboardingPage(
-      icon: Icons.cell_tower_rounded,
+      imageAsset: 'assets/logo/logo-mark-standalone.png',
       title: 'What is RoadMesh?',
       description:
           'RoadMesh connects nearby vehicles in real time. Share your position anonymously and receive instant warnings about other vehicles around you.',
@@ -123,6 +123,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           Column(
             children: [
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 4),
+                  child: Image.asset(
+                    'assets/logo/logo-horizontal-light-bg.png',
+                    height: 32,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -223,13 +234,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 }
 
 class _OnboardingPage {
-  final IconData icon;
+  final IconData? icon;
+  final String? imageAsset;
   final String title;
   final String description;
   final Color color;
 
   const _OnboardingPage({
-    required this.icon,
+    this.icon,
+    this.imageAsset,
     required this.title,
     required this.description,
     required this.color,
@@ -244,18 +257,24 @@ class _PageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 80, 32, 32),
+      padding: const EdgeInsets.fromLTRB(32, 40, 32, 32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon orb
+          // Icon or Brand Mark orb
           Container(
             width: 120,
             height: 120,
+            padding: EdgeInsets.all(page.imageAsset != null ? 24 : 0),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: page.color.withValues(alpha: 0.12),
-              border: Border.all(color: page.color.withValues(alpha: 0.3), width: 1.5),
+              color: page.imageAsset != null
+                  ? Colors.white
+                  : page.color.withValues(alpha: 0.12),
+              border: Border.all(
+                color: page.color.withValues(alpha: 0.35),
+                width: 2,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: page.color.withValues(alpha: 0.25),
@@ -264,7 +283,12 @@ class _PageContent extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(page.icon, color: page.color, size: 52),
+            child: page.imageAsset != null
+                ? Image.asset(
+                    page.imageAsset!,
+                    fit: BoxFit.contain,
+                  )
+                : Icon(page.icon, color: page.color, size: 52),
           ),
           const SizedBox(height: 40),
 

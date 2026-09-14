@@ -8,6 +8,7 @@ import 'providers/driving_provider.dart';
 import 'providers/stats_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 import 'services/app_logger.dart';
 
@@ -42,6 +43,7 @@ class RoadMeshApp extends StatefulWidget {
 }
 
 class _RoadMeshAppState extends State<RoadMeshApp> {
+  bool _showSplash = true;
   late bool _showOnboarding;
 
   @override
@@ -61,14 +63,22 @@ class _RoadMeshAppState extends State<RoadMeshApp> {
         title: 'RoadMesh',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        home: _showOnboarding
-            ? OnboardingScreen(
-                onComplete: () {
-                  AppLogger.info('Onboarding complete');
-                  setState(() => _showOnboarding = false);
+        home: _showSplash
+            ? SplashScreen(
+                onDone: () {
+                  if (mounted) {
+                    setState(() => _showSplash = false);
+                  }
                 },
               )
-            : const HomeScreen(),
+            : _showOnboarding
+                ? OnboardingScreen(
+                    onComplete: () {
+                      AppLogger.info('Onboarding complete');
+                      setState(() => _showOnboarding = false);
+                    },
+                  )
+                : const HomeScreen(),
       ),
     );
   }

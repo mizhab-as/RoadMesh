@@ -5,6 +5,7 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:roadmesh_app/main.dart';
@@ -13,5 +14,6 @@ void main() {
   testWidgets('Smoke test RoadMeshApp launches', (WidgetTester tester) async {
     await tester.pumpWidget(const RoadMeshApp(showOnboarding: false));
     expect(find.byType(RoadMeshApp), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
   });
 }
