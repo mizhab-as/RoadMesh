@@ -113,12 +113,22 @@ The mobile application is a high-performance, real-time client providing navigat
 | `battery_plus` | `^6.0.3` | Battery health tracking to dynamically throttle telemetry frequency in power-save mode. |
 | `shared_preferences` | `^2.3.4` | Local key-value store persisting onboarding status, unit preferences, and vehicle profile. |
 | `share_plus` | `^12.0.2` | Real-time geoposition sharing URL generation. |
+| `flutter_launcher_icons` | `^0.13.1` | Automated multi-platform launcher icon compilation (Android adaptive & iOS). |
+| `flutter_native_splash` | `^2.4.1` | Native OS launch screen generator for Android 12+ and iOS. |
 
 #### Key Mobile Screens & Widgets:
+* `splash_screen.dart`: Branded startup screen rendering a 60fps/120fps live collision radar pulse with ego-vehicle beacon glow and official ROADMESH vector typography.
+* `onboarding_screen.dart`: 3-stage animated carousel highlighting V2X cooperative awareness, AI collision prediction, and zero-storage privacy.
+* `home_screen.dart`: Entry console with V2X radar pulse animation, network status, quick-start navigation, server presets, and vehicle type selection.
 * `driving_screen.dart`: The core HUD. Displays live Google Maps with customized route overlays, vehicle markers, dynamic speed gauge (`SpeedometerTopHud`), floating camera controls (`FloatingMapDock`), lane guidance overlay, and dynamic collision banners.
-* `home_screen.dart`: Entry console with V2X radar pulse animation, network status, quick-start navigation, and vehicle type selection.
 * `stats_screen.dart`: Post-drive safety diagnostics, average speeds, near-miss count, and time-in-risk distribution.
 * `debug_screen.dart`: Technical diagnostic console for verifying WebSocket latency, GPS jitter, raw sensor vectors, and active geohash cells.
+
+#### Brand & Asset Pipeline:
+* `assets/icons/`: Adaptive Android foreground/background layers and 1024×1024 master icon.
+* `assets/splash/`: Centered 512×512 mark for native Android/iOS launch sequences.
+* `assets/logo/`: Official horizontal light/dark lockups and standalone mark emblem.
+* `assets/fonts/`: Bundled Inter and Orbitron fonts.
 
 ---
 

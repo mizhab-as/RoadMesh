@@ -43,6 +43,7 @@ Photorealistic 3D map navigation with metallic sedan rendering, real-time speed 
 - **🧠 Geohash Precision-6 Spatial Indexing**: Sub-millisecond $O(1)$ grid queries evaluating 9 neighboring spatial buckets without $O(N^2)$ distance computation bottlenecks.
 - **🎯 Predictive Collision AI (TCA)**: Relative velocity dot-product trajectory projection calculating Time-to-Closest-Approach (TCA) up to 10 seconds ahead.
 - **🏎️ Clean Speedometer HUD**: Dedicated floating circular HUD showing the vehicle's actual GPS driving speed in `km/h` without arbitrary road speed limits or false alarms.
+- **🎨 Complete Automotive Brand Identity**: Native Android adaptive & iOS icons, Android 12+ native splash, and 60fps/120fps animated in-app radar beacon splash sequence.
 - **🛣️ 3D Tactical Navigation**: Google Maps vector map layer with 3D buildings, turn-by-turn guidance, lane indicators, and camera lock modes.
 - **🛡️ Directional Multi-Sensory Alerts**: Real-time visual radar ripples, Text-to-Speech (TTS) voice callouts, and tactile haptic vibration warnings.
 - **📊 Central Operations Console**: Web-based Leaflet map tracking fleet nodes, speeds, headings, and active perimeter collision risks.
@@ -260,9 +261,13 @@ Pushed in real time when TCA indicates an imminent collision:
 cd roadmesh-server && npm test
 # 61 passed across 5 test suites (geo, geohash, predictor, store, server)
 
-# Flutter static analysis
-cd roadmesh-app && flutter analyze
-# 0 issues found!
+# Flutter static analysis & test suite
+cd roadmesh-app && flutter analyze && flutter test
+# 0 issues found! All tests passed.
+
+# Generate launcher icons & native splash screens
+dart run flutter_launcher_icons
+dart run flutter_native_splash:create
 ```
 
 ---
