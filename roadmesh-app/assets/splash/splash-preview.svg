@@ -1,0 +1,47 @@
+<svg width="375" height="812" viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="80%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E7ECF2"/>
+    </radialGradient>
+    <radialGradient id="beaconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2563EB" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="375" height="812" fill="url(#bg)"/>
+
+  <!-- mark + radar -->
+  <g transform="translate(187,370) scale(2.05) translate(-100,-104)">
+    <circle cx="100" cy="112" r="22" fill="none" stroke="#EF4444" stroke-width="1.8" opacity="0.6"/>
+    <circle cx="100" cy="112" r="34" fill="none" stroke="#EF4444" stroke-width="1.4" opacity="0.4"/>
+    <circle cx="100" cy="112" r="46" fill="none" stroke="#EF4444" stroke-width="1.1" opacity="0.24"/>
+    <circle cx="100" cy="112" r="60" fill="none" stroke="#EF4444" stroke-width="0.9" opacity="0.12"/>
+
+    <g stroke="#334155" stroke-width="3.6" stroke-linecap="round">
+      <line x1="100" y1="46" x2="52" y2="148"/>
+      <line x1="100" y1="46" x2="148" y2="148"/>
+      <line x1="52" y1="148" x2="148" y2="148"/>
+      <line x1="100" y1="46" x2="100" y2="112"/>
+      <line x1="100" y1="112" x2="52" y2="148"/>
+      <line x1="100" y1="112" x2="148" y2="148"/>
+    </g>
+
+    <circle cx="100" cy="46" r="8" fill="#22C55E"/>
+    <circle cx="52" cy="148" r="8" fill="#22C55E"/>
+    <circle cx="148" cy="148" r="8" fill="#22C55E"/>
+
+    <circle cx="100" cy="112" r="22" fill="url(#beaconGlow)"/>
+    <circle cx="100" cy="112" r="10.5" fill="#2563EB"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="187" y="515" text-anchor="middle" fill="#1E293B" font-size="30" font-weight="800" letter-spacing="1">ROAD<tspan fill="#16A34A">MESH</tspan></text>
+
+  <!-- tagline -->
+  <text x="187" y="544" text-anchor="middle" fill="#64748B" font-size="11" font-weight="600" letter-spacing="3">COOPERATIVE VEHICLE AWARENESS</text>
+
+  <!-- loading hint, green like the live app's active states -->
+  <circle cx="187" cy="740" r="3" fill="#22C55E"><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite"/></circle>
+</svg>
