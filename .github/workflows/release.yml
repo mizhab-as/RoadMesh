@@ -1,0 +1,52 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Get packages
+        run: cd roadmesh-app && flutter pub get
+
+      - name: Build release APK
+        run: |
+          cd roadmesh-app
+          flutter build apk --release --obfuscate --split-debug-info=build/debug-info
+
+      - name: Rename APK
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          cp roadmesh-app/build/app/outputs/flutter-apk/app-release.apk roadmesh-${VERSION}.apk
+
+      - name: Compute SHA-256
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          sha256sum roadmesh-${VERSION}.apk > roadmesh-${VERSION}.apk.sha256
+          cat roadmesh-${VERSION}.apk.sha256
+
+      - name: Create GitHub Release & upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "RoadMesh ${{ github.ref_name }}"
+          body_path: releases/RELEASE_NOTES.md
+          files: |
+            roadmesh-${{ github.ref_name }}.apk
+            roadmesh-${{ github.ref_name }}.apk.sha256
